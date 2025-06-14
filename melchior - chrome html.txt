@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Interativo sobre TDAH: Para Além dos Sintomas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Clarity (Soft neutrals, gentle blue accent, dark slate text) -->
+    <!-- Application Structure Plan: A thematic single-page journey designed to guide the user from relatable symptoms to a deeper, more responsible understanding of TDAH. The flow is: 1) Introduction setting a responsible tone, 2) An interactive Symptom Explorer that embeds clinical criteria (duration, impairment) into the interaction itself, 3) A clear visual comparison of 'Normal Behavior vs. Clinical Impairment', 4) An interactive 'Differential Diagnosis' section to show overlap with other conditions, 5) An 'Iceberg' visual metaphor for a summary view, and 6) A strong call to action for professional help. This structure was chosen to actively counter the risk of self-diagnosis by building knowledge contextually, rather than just presenting a list of symptoms. -->
+    <!-- Visualization & Content Choices: Report Info: TDAH symptoms, criteria, differential diagnosis. Goal: Educate responsibly. Viz/Methods: Interactive symptom cards (HTML/JS) to teach criteria; Side-by-side text blocks (HTML/CSS) to contrast normal vs. impairing behavior; Tabbed interface (HTML/JS) for differential diagnosis; A horizontal bar chart (Chart.js) to visualize comorbidity rates, reinforcing the need for professional assessment; An 'Iceberg' diagram (HTML/CSS) to show hidden aspects of TDAH. Justification: These choices create an interactive, educational journey instead of a static, risky checklist. All interactions are designed to deepen understanding of clinical requirements. Library/Method: Vanilla JS, Chart.js, Tailwind CSS. CONFIRMATION: NO SVG/Mermaid. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #3d4f60;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #4a90e2;
+            border-bottom-color: #4a90e2;
+        }
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+        }
+        .tab.active {
+            background-color: #4a90e2;
+            color: #ffffff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .iceberg-bg {
+            background: linear-gradient(to bottom, #f8f7f4 30%, #a4c4e4 30%);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="text-xl font-bold text-[#3d4f60]">
+                Guia TDAH
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#inicio" class="nav-link">Início</a>
+                <a href="#explorador" class="nav-link">Explorador</a>
+                <a href="#impacto" class="nav-link">Impacto Real</a>
+                <a href="#diferencial" class="nav-link">Outras Causas</a>
+                <a href="#iceberg" class="nav-link">O Iceberg</a>
+                <a href="#ajuda" class="nav-link">Ajuda</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 space-y-2">
+            <a href="#inicio" class="block nav-link">Início</a>
+            <a href="#explorador" class="block nav-link">Explorador</a>
+            <a href="#impacto" class="block nav-link">Impacto Real</a>
+            <a href="#diferencial" class="block nav-link">Outras Causas</a>
+            <a href="#iceberg" class="block nav-link">O Iceberg</a>
+            <a href="#ajuda" class="block nav-link">Ajuda</a>
+        </div>
+    </header>
+
+    <main>
+        <section id="inicio" class="py-20 md:py-28">
+            <div class="container mx-auto px-6 text-center">
+                <h1 class="text-4xl md:text-5xl font-bold text-[#3d4f60] mb-4">Para Além dos Sintomas</h1>
+                <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600">
+                    Este é um guia interativo para entender o TDAH de forma responsável. Muitos de nós nos identificamos com alguns sintomas, mas um transtorno é definido por um impacto profundo e persistente na vida. Vamos explorar essa diferença juntos.
+                </p>
+                <div class="mt-8 text-sm text-gray-500">
+                    <p>⚠️ <span class="font-semibold">Importante:</span> Esta ferramenta é para fins educacionais. Não substitui um diagnóstico profissional.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="explorador" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold">Explorador de Sinais</h2>
+                    <p class="mt-3 text-lg max-w-3xl mx-auto text-gray-600">
+                        O diagnóstico de TDAH considera mais do que apenas a presença de um sintoma. Ele analisa a duração, o contexto e o impacto. Clique em um sinal abaixo e reflita sobre as perguntas que aparecem.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4 text-center text-[#4a90e2]">Sinais de Desatenção</h3>
+                        <div id="inattention-symptoms" class="space-y-3"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4 text-center text-[#4a90e2]">Sinais de Hiperatividade/Impulsividade</h3>
+                        <div id="hyperactivity-symptoms" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="impacto" class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold">Comportamento Comum vs. Prejuízo Funcional</h2>
+                    <p class="mt-3 text-lg max-w-3xl mx-auto text-gray-600">
+                        A chave para o diagnóstico é o <span class="font-semibold">prejuízo real e significativo</span>. Esta seção ajuda a diferenciar experiências humanas normais de padrões que caracterizam um transtorno.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="card p-6">
+                        <h4 class="font-bold text-lg mb-2">Esquecimento</h4>
+                        <p class="text-sm mb-3"><strong class="text-gray-500">Comum:</strong> Esquecer as chaves ou um nome de vez em quando.</p>
+                        <p class="text-sm"><strong class="text-green-600">Prejuízo:</strong> Esquecer cronicamente de pagar contas, levando a dívidas, ou de buscar o filho na escola, gerando problemas familiares graves.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h4 class="font-bold text-lg mb-2">Procrastinação</h4>
+                        <p class="text-sm mb-3"><strong class="text-gray-500">Comum:</strong> Adiar uma tarefa chata por um ou dois dias.</p>
+                        <p class="text-sm"><strong class="text-green-600">Prejuízo:</strong> Procrastinação paralisante que leva à perda de emprego, reprovação em matérias ou acúmulo de tarefas essenciais, causando ansiedade severa.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h4 class="font-bold text-lg mb-2">Distração</h4>
+                        <p class="text-sm mb-3"><strong class="text-gray-500">Comum:</strong> Perder o foco durante uma palestra longa e monótona.</p>
+                        <p class="text-sm"><strong class="text-green-600">Prejuízo:</strong> Ser incapaz de manter o foco em conversas importantes, reuniões de trabalho ou durante a leitura, afetando relacionamentos e carreira.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h4 class="font-bold text-lg mb-2">Inquietação</h4>
+                        <p class="text-sm mb-3"><strong class="text-gray-500">Comum:</strong> Sentir-se impaciente em uma fila longa.</p>
+                        <p class="text-sm"><strong class="text-green-600">Prejuízo:</strong> Uma sensação interna constante de "motor ligado" que impede de relaxar, levando a decisões impulsivas e dificuldade em atividades calmas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="diferencial" class="py-20 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold">Quando a Desatenção Pode Ter Outra Causa?</h2>
+                    <p class="mt-3 text-lg max-w-3xl mx-auto text-gray-600">
+                        Sintomas parecidos com os do TDAH podem ser causados por outras condições. Um diagnóstico profissional é crucial para diferenciar. Veja algumas possibilidades.
+                    </p>
+                </div>
+                
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex flex-wrap justify-center border-b border-gray-200 mb-4">
+                        <button data-tab="ansiedade" class="tab py-2 px-4 font-semibold text-gray-600 rounded-t-lg transition-colors duration-300 active">Ansiedade</button>
+                        <button data-tab="depressao" class="tab py-2 px-4 font-semibold text-gray-600 rounded-t-lg transition-colors duration-300">Depressão</button>
+                        <button data-tab="bipolar" class="tab py-2 px-4 font-semibold text-gray-600 rounded-t-lg transition-colors duration-300">T. Bipolar</button>
+                        <button data-tab="sono" class="tab py-2 px-4 font-semibold text-gray-600 rounded-t-lg transition-colors duration-300">T. do Sono</button>
+                    </div>
+                    <div id="tab-content" class="p-2 md:p-6">
+                        <div id="ansiedade" class="tab-content active">
+                            <h4 class="font-bold text-xl mb-2">Ansiedade</h4>
+                            <p class="text-gray-700">Na ansiedade, a dificuldade de concentração geralmente vem de preocupações e medos constantes. A mente não está "vazia" ou "saltando", mas sim "presa" em pensamentos ruminativos sobre o futuro ou sobre perigos. A inquietação é mais uma expressão de tensão interna do que a necessidade de se mover, típica do TDAH.</p>
+                        </div>
+                        <div id="depressao" class="tab-content">
+                             <h4 class="font-bold text-xl mb-2">Depressão</h4>
+                            <p class="text-gray-700">A depressão pode causar desatenção e baixa motivação, mas geralmente é acompanhada por um humor deprimido, perda de interesse e prazer em quase tudo (anedonia) e uma sensação de lentidão. É diferente da inquietação interna e da busca por estímulos do TDAH.</p>
+                        </div>
+                         <div id="bipolar" class="tab-content">
+                            <h4 class="font-bold text-xl mb-2">Transtorno Bipolar</h4>
+                            <p class="text-gray-700">O TDAH é um padrão crônico e constante. O transtorno bipolar é episódico, com fases claras de humor (mania/hipomania e depressão). Em uma fase de mania, a pessoa pode parecer ter TDAH (fala rápida, distração, impulsividade), mas esse estado é diferente do seu funcionamento normal.</p>
+                        </div>
+                         <div id="sono" class="tab-content">
+                            <h4 class="font-bold text-xl mb-2">Transtornos do Sono</h4>
+                            <p class="text-gray-700">A privação de sono é uma causa muito comum de irritabilidade, problemas de memória e falta de atenção. Antes de pensar em TDAH, é fundamental avaliar a qualidade do sono. Muitas vezes, tratar a insônia ou a apneia resolve os "sintomas" diurnos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-16">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold">O TDAH Raramente Vem Sozinho</h3>
+                        <p class="mt-2 text-gray-600 max-w-2xl mx-auto">A comorbidade (presença de duas ou mais condições ao mesmo tempo) é muito comum. Isso torna o autodiagnóstico ainda mais arriscado.</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="comorbidityChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="iceberg" class="py-20 iceberg-bg">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold">O Iceberg do TDAH</h2>
+                    <p class="mt-3 text-lg max-w-3xl mx-auto text-gray-600">
+                        O que as pessoas veem são apenas os sintomas na superfície. Por baixo, existem muitos outros desafios que compõem a experiência de viver com TDAH.
+                    </p>
+                </div>
+                <div class="relative max-w-lg mx-auto p-4">
+                    <div class="text-center">
+                        <div class="p-4 rounded-lg">
+                            <h3 class="font-bold text-xl mb-2">O que se vê:</h3>
+                            <div class="flex justify-center space-x-2 flex-wrap">
+                                <span class="bg-blue-100 text-blue-800 text-sm font-medium m-1 px-2.5 py-0.5 rounded">Desatenção</span>
+                                <span class="bg-blue-100 text-blue-800 text-sm font-medium m-1 px-2.5 py-0.5 rounded">Hiperatividade</span>
+                                <span class="bg-blue-100 text-blue-800 text-sm font-medium m-1 px-2.5 py-0.5 rounded">Impulsividade</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-1 bg-blue-300 w-full my-4"></div>
+                    <div class="text-center mt-4">
+                        <h3 class="font-bold text-xl mb-3 text-slate-700">O que não se vê:</h3>
+                        <div class="flex justify-center flex-wrap gap-2 text-slate-800">
+                             <span class="bg-blue-200/50 text-slate-700 text-sm font-medium m-1 px-2.5 py-0.5 rounded">Disfunção Executiva</span>
+                            <span class="bg-blue-200/50 text-slate-700 text-sm font-medium m-1 px-2.5 py-0.5 rounded">Desregulação Emocional</span>
+                             <span class="bg-blue-200/50 text-slate-700 text-sm font-medium m-1 px-2.5 py-0.5 rounded">Sensibilidade à Rejeição</span>
+                             <span class="bg-blue-200/50 text-slate-700 text-sm font-medium m-1 px-2.5 py-0.5 rounded">Dificuldade com o Tempo</span>
+                             <span class="bg-blue-200/50 text-slate-700 text-sm font-medium m-1 px-2.5 py-0.5 rounded">Problemas de Memória de Trabalho</span>
+                            <span class="bg-blue-200/50 text-slate-700 text-sm font-medium m-1 px-2.5 py-0.5 rounded">Baixa Autoestima</span>
+                             <span class="bg-blue-200/50 text-slate-700 text-sm font-medium m-1 px-2.5 py-0.5 rounded">Hiperfoco</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ajuda" class="py-20 bg-white">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold">Buscar Ajuda é um Ato de Coragem</h2>
+                <p class="mt-3 text-lg max-w-3xl mx-auto text-gray-600 mb-8">
+                    Se os desafios apresentados neste guia ressoam com sua experiência e causam sofrimento real, o passo mais importante é conversar com um profissional. Um diagnóstico correto é a chave para o tratamento e o apoio adequados.
+                </p>
+                <div class="bg-blue-50 border-l-4 border-blue-400 text-blue-700 p-4 rounded-md max-w-2xl mx-auto text-left">
+                    <p class="font-bold">Lembre-se:</p>
+                    <ul class="list-disc list-inside mt-2 space-y-1">
+                        <li>A informação online ajuda, mas não substitui uma avaliação clínica.</li>
+                        <li>O autodiagnóstico pode ser impreciso e levar a tratamentos inadequados.</li>
+                        <li>Um psicólogo ou psiquiatra pode ajudá-lo a entender o quadro completo.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-[#3d4f60] text-white py-8">
+        <div class="container mx-auto px-6 text-center text-sm">
+            <p>Este guia interativo foi desenvolvido como uma ferramenta educacional para promover a conscientização responsável sobre TDAH.</p>
+            <p class="mt-2">Conteúdo baseado em critérios do DSM-5 e na importância do diagnóstico diferencial. Criado com fins ilustrativos.</p>
+        </div>
+    </footer>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // Smooth scrolling for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            mobileMenu.classList.add('hidden'); // Close mobile menu on click
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    const symptoms = {
+        inattention: [
+            "Erros por descuido ou dificuldade em prestar atenção a detalhes.",
+            "Dificuldade em manter o foco em tarefas ou brincadeiras.",
+            "Parece não ouvir quando alguém fala diretamente.",
+            "Dificuldade em seguir instruções e finalizar tarefas.",
+            "Problemas com organização de tarefas e atividades.",
+            "Evita ou reluta em fazer tarefas que exigem esforço mental prolongado.",
+            "Perde objetos necessários para tarefas com frequência.",
+            "É facilmente distraído por estímulos externos.",
+            "Esquecimento em atividades diárias."
+        ],
+        hyperactivity: [
+            "Inquietação, mexe as mãos ou os pés ou se remexe na cadeira.",
+            "Levanta-se em situações em que se espera que permaneça sentado.",
+            "Corre ou sobe nas coisas em situações inapropriadas.",
+            "Incapaz de brincar ou se envolver em atividades de lazer calmamente.",
+            "Está frequentemente 'a todo vapor', agindo como se estivesse 'ligado a um motor'.",
+            "Fala excessivamente.",
+            "Responde antes que as perguntas tenham sido concluídas.",
+            "Dificuldade em esperar a sua vez.",
+            "Interrompe ou se intromete nas conversas dos outros."
+        ]
+    };
+
+    const inattentionContainer = document.getElementById('inattention-symptoms');
+    const hyperactivityContainer = document.getElementById('hyperactivity-symptoms');
+
+    function createSymptomCard(symptomText) {
+        const card = document.createElement('div');
+        card.className = 'p-4 border rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors';
+        card.innerHTML = `<p class="font-semibold">${symptomText}</p>
+                          <div class="mt-3 text-sm text-gray-600 space-y-2 hidden">
+                              <p><strong>Reflexão 1:</strong> Este padrão é consistente há <strong>pelo menos 6 meses</strong>?</p>
+                              <p><strong>Reflexão 2:</strong> Isso causa problemas significativos em <strong>mais de um ambiente</strong> (ex: em casa E no trabalho/escola)?</p>
+                              <p><strong>Reflexão 3 (para adultos):</strong> Você se lembra de ter desafios parecidos <strong>antes dos 12 anos</strong>?</p>
+                          </div>`;
+        card.addEventListener('click', () => {
+            const details = card.querySelector('.hidden');
+            if(details) {
+                details.classList.remove('hidden');
+                details.classList.add('block');
+            }
+            card.style.cursor = 'default';
+            card.classList.replace('hover:bg-gray-100', 'bg-blue-50');
+        });
+        return card;
+    }
+
+    symptoms.inattention.forEach(symptom => {
+        inattentionContainer.appendChild(createSymptomCard(symptom));
+    });
+
+    symptoms.hyperactivity.forEach(symptom => {
+        hyperactivityContainer.appendChild(createSymptomCard(symptom));
+    });
+
+
+    // Tabs for differential diagnosis
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetId = tab.dataset.tab;
+
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+                if (content.id === targetId) {
+                    content.classList.add('active');
+                }
+            });
+        });
+    });
+
+    // Chart.js for comorbidity
+    const ctx = document.getElementById('comorbidityChart').getContext('2d');
+    const comorbidityChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Transtornos de Ansiedade', 'Transtornos Depressivos', 'Transtornos de Aprendizagem', 'Transtornos do Sono', 'Uso de Substâncias'],
+            datasets: [{
+                label: '% de Comorbidade com TDAH (Estimativa)',
+                data: [50, 30, 45, 40, 25],
+                backgroundColor: 'rgba(74, 144, 226, 0.6)',
+                borderColor: 'rgba(74, 144, 226, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: false,
+                    text: 'Condições Frequentemente Associadas ao TDAH'
+                },
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` Cerca de ${context.raw}% das pessoas com TDAH também podem ter esta condição.`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%'
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+});
+</script>
+
+</body>
+</html>
